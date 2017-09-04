@@ -1,7 +1,6 @@
-[![CircleCI](https://circleci.com/gh/amfleming/skeleton.svg?style=svg)](https://circleci.com/gh/amfleming/skeleton)
+[![CircleCI](https://circleci.com/gh/mshatkhin23/skeleton.svg?style=svg)](https://circleci.com/gh/mshatkhin23/skeleton)
 
-
-skeleton (TEST)
+skeleton (test)
 ============
 A super simple foundation for building a scalable RESTful HTTP servers
 
