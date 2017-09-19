@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css" />
+    <script data-require="jquery@*" data-semver="3.1.1" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <style>
+        #container {border: 1px solid brown;}
+        H1 {float: left;}
+
+        .button{
+            background-color: #e3a506;
+            border: 1px solid #229;
+            width: 100px;
+            float: right;
+            font-size: 2em;
+            color: white;
+            text-align: center;
+        }
+
+        #receiptList {
+            border: 1px solid green;
+            clear: both;
+            margin-bottom: 5px;
+        }
+
+        .receipt {
+            background-color: #eee;
+            margin-bottom: 5px;
+        }
+
+        .time {
+            width: 100px;
+            margin-right: 100px;
+            margin-bottom: 100px;
+            text-align: center;
+        }
+
+        .merchant {
+            width: 100px;
+            margin-right: 100px;
+            margin-bottom: 5px;
+            text-align: center;
+
+        }
+
+        .amount {
+            width: 100px;
+            margin-right: 100px;
+            margin-bottom: 5px;
+            text-align: center;
+
+        }
+
+        .tags {
+            width: 100px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        #addReceiptBox {
+            border: 1px solid #010104;
+            clear: both;
+            margin-bottom: 5px;
+            background-color: #e3a506;
+            /*visibility: hidden;*/
+        }
+
+        #merchantAdd {
+            border: 1px solid #010104;
+            clear: both;
+            margin-bottom: 5px;
+            background-color: #e3a506;
+            color: white;
+        }
+
+        #amountAdd {
+            border: 1px solid #010104;
+            clear: both;
+            margin-bottom: 5px;
+            background-color: #e3a506;
+            color: white;
+        }
+
+        #cancel-receipt {
+            border: 1px solid #010104;
+            clear: both;
+            margin-bottom: 5px;
+            background-color: #aa210d;
+            color: white;
+            /*float: right*/
+        }
+
+        #save-receipt {
+            border: 1px solid #010104;
+            clear: both;
+            margin-bottom: 5px;
+            background-color: #35aa16;
+            color: white;
+            /*float:right*/
+        }
+
+        .tagButton {
+            border: 1px solid #010104;
+            background-color: #18f5e2;
+            color: black;
+            margin-left: 10px;
+            margin-right:10px;
+            width: 100px;
+        }
+
+        .cancelTagButton{
+            margin-left: 5px;
+            margin-right:5px;
+            color: #010104
+        }
+
+        .add-tag{
+            margin-left: 10px;
+            margin-right:10px;
+            background-color: #f5a718;
+            color: #010104;
+            border: 1px solid #010104;
+        }
+
+        .tag_input{
+            border: 1px solid #010104;
+            background-color: #18f5e2;
+            color: black;
+            margin-left: 10px;
+            margin-right:10px;
+            width: 100px;
+        }
+
+    </style>
+    <script>
+
+        const api = ""; // <- do not need a root api URL if this page is served directly by the API
+
+        // Listener for adding a new tag
+        $(document).on("click",".add-tag",function() {
+            var rID = $(this).parent().attr("id");
+            var id_string = "r" + rID.toString() + "_tagInput";
+            $(".tags#" + rID).append(`<input class="tag_input" id = ${id_string} placeholder="enter tag"></input>`);
+        });
+
+        // Listener for finishing the input and hitting enter
+        $(document).on("keypress",".tag_input", function(e){
+            var key = e.which;
+            if(key == 13)  // the enter key code
+            {
+                console.log('Pressed Enter')
+                var tag = $(this).val();
+                var rID = $(this).parent().attr("id");
+                addTag(rID, tag, $(this));
+            }
+        });
+
+        // Listener for clicking save and adding new receipt
+        $(document).on("click","#save-receipt",function(){
+            var merchantText = $('#merchant').val();
+            var amntVal = parseFloat($('#amount').val());
+            console.log(merchantText.toString())
+            console.log(amntVal.toString());
+            addReceipt(merchantText,amntVal);
+        });
+
+        // Listener for clicking on existing tag to get rid of it
+        $(document).on("click",".tagButton",function(){
+            var id_string = $(this).attr("id");
+            console.log("Clicked on id_string = " + id_string)
+            var rID = parseInt(id_string.split("r")[1].split("_")[0]);
+            var tag = id_string.split("tag")[1];
+            console.log("Removing tag: " + tag);
+            removeTag(rID,tag, $(this));
+        })
+
+        // Function for removing tag
+        function removeTag(rID,tag, input_ref){
+            var PUT_url = api+"/tags/"+tag;
+            // PUT REQUEST
+            $.ajax({
+                type: "PUT",
+                url: PUT_url,
+                data: rID.toString(),
+                contentType: "application/json",
+                success: function(){
+                    console.log("successfully toggled tag of receipt ID: = " + rID);
+                    input_ref.remove();
+                },
+            });
+
+        }
+
+        // Function for adding tag
+        function addTag(rID, tag, input_ref){
+
+            var PUT_url = api+"/tags/"+tag;
+            // PUT REQUEST
+            $.ajax({
+                type: "PUT",
+                url: PUT_url,
+                data: rID.toString(),
+                contentType: "application/json",
+                success: function(){
+                    console.log("successfully toggled tag of receipt ID: = " + rID);
+                    input_ref.remove();
+                    addTagButton(tag, rID);
+                },
+            });
+
+        }
+
+        // Function for adding new receipt
+        function addReceipt(merchant, amount){
+            var POST_url = api+"/receipts"
+
+            $.ajax({
+                type: "POST",
+                url: POST_url,
+                data: JSON.stringify({
+                    merchant: merchant,
+                    amount: 1.5
+                }),
+                contentType: "application/json",
+                success: function(receiptID){
+                    console.log("post receipt ID = " + receiptID);
+                    var dt = new Date();
+                    var time = dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
+                    addReceiptRow(receiptID, merchant, amount, time);
+                },
+            });
+
+        }
+
+        // Function for adding a Receipt Row
+        function addReceiptRow(rID, merchant, amount, timeCreated){
+            $(`<div class="receipt">
+                        <span class = "time">${timeCreated}</span>
+                        <span class = "merchant">${merchant}</span>
+                        <span class = "amount">${amount}</span>
+                        <span class = "tags" id=${rID}></span>
+                     </div>`)
+                .appendTo($("#receiptList"));
+            addADDButton(rID);
+            addTags(rID)
+        }
+
+        // Add ADD Button
+        function addADDButton(id) {
+            var id_string = "r" + id + "_addTag";
+            $(".tags#" + id).append(`<button class="add-tag" id=${id_string}>ADD + </button>`);
+        }
+
+        // Add Tag Button
+        function addTagButton(tag, id) {
+            var id_string = "r" + id + "_tag" + tag;
+            var tag_display = tag + ' x ';
+            console.log("Adding tag button with ID = " + id_string)
+            $(".tags#" + id).append(`<button class="tagButton" id = ${id_string}>${tag_display}</button>`);
+        }
+
+        // Add all Tags
+        function addTags(rID) {
+
+            // Get list of tags
+            var id = rID.toString();
+            var GET_url = api + "/receipts/" + id;
+
+            $.ajax({
+                url: GET_url,
+                type: 'GET',
+                success: function(tagList){
+                    for (var i = 0; i < tagList.length; i++) {
+                        var tag = tagList[i];
+                        addTagButton(tag, rID)
+                    };
+                },
+                error: function(data) {
+                    console.log("No Tags of receipt ID " + id + " exist");
+                }
+            });
+        }
+
+
+        // This is the idiomatic way to ensure that JQuery does not
+        // execute until the page has loaded
+        $(function(){
+
+            // hide addReceiptBox
+            $('#addReceiptBox').hide();
+
+            // make addButton clickable
+            $('#add-receipt').click(function(){
+                $('#addReceiptBox').show();
+            })
+
+            // make cancelButton clickable
+            $('#cancel-receipt').click(function(){
+                $('#addReceiptBox').hide();
+                $('#merchant').val('');
+                $('#amount').val('');
+            })
+
+            // Populate Table
+            $.getJSON(api+"/receipts", function(receipts){
+                for(var i=0; i < receipts.length; i++) {
+                    var receipt = receipts[i];
+                    addReceiptRow(receipt.id, receipt.merchantName, receipt.value, receipt.created);
+                }
+
+            })
+        })
+    </script>
+</head>
+
+<body>
+<DIV id="container">
+    <h1>My receipts</h1>
+    <button class="button" id="add-receipt">+</button>'
+    <div id="addReceiptBox">
+        <div id = "merchantAdd">
+            <input type="text" id="merchant" placeholder="merchant"><br>
+        </div>
+
+        <div id="amountAdd">
+            <input type="text" id="amount" placeholder="amount"><br>
+        </div>
+        <div id = 'temp'>
+            <span id="cancel-receipt">cancel</span>
+            <span id="save-receipt">save</span>
+        </div>
+    </div>
+    <div id="receiptList">
+        <span class = "time">Time</span>
+        <span class = "merchant">Merchant</span>
+        <span class = "amount">$</span>
+        <span class = "tags">Tags</span>
+
+    </div>
+
+</DIV>
+</body>
+
+</html>

@@ -48,4 +48,6 @@ public class TagController {
         List<ReceiptsRecord> receiptRecords = tags.getReceiptsByTags(tagName);
         return receiptRecords.stream().map(ReceiptResponse::new).collect(toList());
     }
+
+
 }
