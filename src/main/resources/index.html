@@ -100,7 +100,7 @@
             /*float:right*/
         }
 
-        .tagButton {
+        .tagValue {
             border: 1px solid #010104;
             background-color: #18f5e2;
             color: black;
@@ -166,11 +166,12 @@
         });
 
         // Listener for clicking on existing tag to get rid of it
-        $(document).on("click",".tagButton",function(){
+        $(document).on("click",".tagValue",function(){
             var id_string = $(this).attr("id");
             console.log("Clicked on id_string = " + id_string)
-            var rID = parseInt(id_string.split("r")[1].split("_")[0]);
-            var tag = id_string.split("tag")[1];
+            var str_secs = id_string.split("_");
+            var rID = parseInt(str_secs[1]);
+            var tag = str_secs[3];
             console.log("Removing tag: " + tag);
             removeTag(rID,tag, $(this));
         })
@@ -254,10 +255,10 @@
 
         // Add Tag Button
         function addTagButton(tag, id) {
-            var id_string = "r" + id + "_tag" + tag;
+            var id_string = "r_" + id + "_tag_" + tag;
             var tag_display = tag + ' x ';
             console.log("Adding tag button with ID = " + id_string)
-            $(".tags#" + id).append(`<button class="tagButton" id = ${id_string}>${tag_display}</button>`);
+            $(".tags#" + id).append(`<button class="tagValue" id = ${id_string}>${tag_display}</button>`);
         }
 
         // Add all Tags
